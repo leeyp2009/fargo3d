@@ -1,13 +1,11 @@
 #include "fargo3d.h"
 
-#include "fargo3d.h"
-
 // 定义结构体匹配 bigplanet0.dat 的列
 typedef struct {
     real time, x, y, z, vx, vy, vz;
 } PlanetSnapshot;
 
-void UpdatePlanetFromTrajectory(PlanetarySystem *sys, real current_time) {
+void UpdatePlanetFromTrajectory(PlanetarySystem *sys, real current_time, int n) {
     static PlanetSnapshot *data = NULL;
     static int n_lines = 0;
     static int last_idx = 0;
@@ -17,11 +15,11 @@ void UpdatePlanetFromTrajectory(PlanetarySystem *sys, real current_time) {
         if (CPU_Rank == 0) { // 仅由主进程执行文件 I/O
             char filename[1024];
             // 动态拼接路径: OUTPUTDIR/bigplanet0.dat
-            sprintf(filename, "%sbigplanet0.dat", OUTPUTDIR);
+            sprintf(filename, "%sbigplanet%d.dat", OUTPUTDIR, n);
             
             FILE *fp = fopen(filename, "r");
             if (!fp) {
-                mastererr("错误：无法在目录 %s 中找到 bigplanet0.dat\n", OUTPUTDIR);
+                mastererr("错误：无法在目录 %s 中找到 bigplanet%d.dat\n", OUTPUTDIR, n);
                 exit(1);
             }
             
