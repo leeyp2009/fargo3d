@@ -1,6 +1,8 @@
 #include "fargo3d.h"
 
-// 结构体定义
+#include "fargo3d.h"
+
+// 定义结构体匹配 bigplanet0.dat 的列
 typedef struct {
     real time, x, y, z, vx, vy, vz;
 } PlanetSnapshot;
@@ -12,37 +14,47 @@ void UpdatePlanetFromTrajectory(PlanetarySystem *sys, real current_time) {
 
     // --- 1. 初始化与并行读取 ---
     if (data == NULL) {
-        if (CPU_Rank == 0) { // 仅主进程读取
-            FILE *fp = fopen("bigplanet0.dat", "r");
+        if (CPU_Rank == 0) { // 仅由主进程执行文件 I/O
+            char filename[1024];
+            // 动态拼接路径: OUTPUTDIR/bigplanet0.dat
+            sprintf(filename, "%sbigplanet0.dat", OUTPUTDIR);
+            
+            FILE *fp = fopen(filename, "r");
             if (!fp) {
-                mastererr("Error: Cannot open bigplanet0.dat\n");
+                mastererr("错误：无法在目录 %s 中找到 bigplanet0.dat\n", OUTPUTDIR);
                 exit(1);
             }
-            char line[512];
+            
+            // 统计行数
+            char line[1024];
             while (fgets(line, sizeof(line), fp)) n_lines++;
             rewind(fp);
+
             data = (PlanetSnapshot *)malloc(n_lines * sizeof(PlanetSnapshot));
             for (int i = 0; i < n_lines; i++) {
-                fscanf(fp, "%lf %lf %lf %lf %lf %lf %lf", 
+                // 读取：时间 x y z vx vy vz
+                if (fscanf(fp, "%lf %lf %lf %lf %lf %lf %lf", 
                        &data[i].time, &data[i].x, &data[i].y, &data[i].z, 
-                       &data[i].vx, &data[i].vy, &data[i].vz);
+                       &data[i].vx, &data[i].vy, &data[i].vz) == EOF) break;
             }
             fclose(fp);
+            masterprint("已成功从 %s 加载行星轨迹，共 %d 行。\n", filename, n_lines);
         }
 
         // 广播总行数给所有进程
         MPI_Bcast(&n_lines, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-        // 其他进程分配内存
+        // 其他进程根据行数分配本地内存
         if (CPU_Rank != 0) {
             data = (PlanetSnapshot *)malloc(n_lines * sizeof(PlanetSnapshot));
         }
 
-        // 广播整个数组数据 (MPI_BYTE 方式最通用)
+        // 广播完整的轨迹数据数组
         MPI_Bcast(data, n_lines * sizeof(PlanetSnapshot), MPI_BYTE, 0, MPI_COMM_WORLD);
     }
 
-    // --- 2. 寻找时间区间 (每个进程在本地内存中独立查找) ---
+    // --- 2. 寻找当前模拟时间所在的索引区间 ---
+    // 简单的线性搜索，配合 last_idx 缓存优化性能
     if (current_time < data[0].time) {
         last_idx = 0;
     } else {
@@ -51,12 +63,12 @@ void UpdatePlanetFromTrajectory(PlanetarySystem *sys, real current_time) {
         }
     }
 
-    // --- 3. 线性插值与强制覆盖 ---
+    // --- 3. 时间插值计算 ---
     real t0 = data[last_idx].time;
     real t1 = data[last_idx + 1].time;
     real f = (t1 == t0) ? 0.0 : (current_time - t0) / (t1 - t0);
     
-    // 假设更新第 0 号行星
+    // 强制覆盖系统中第 0 号行星的状态
     int k = 0; 
     sys->x[k]  = data[last_idx].x  + f * (data[last_idx+1].x  - data[last_idx].x);
     sys->y[k]  = data[last_idx].y  + f * (data[last_idx+1].y  - data[last_idx].y);
@@ -65,6 +77,7 @@ void UpdatePlanetFromTrajectory(PlanetarySystem *sys, real current_time) {
     sys->vy[k] = data[last_idx].vy + f * (data[last_idx+1].vy - data[last_idx].vy);
     sys->vz[k] = data[last_idx].vz + f * (data[last_idx+1].vz - data[last_idx].vz);
 }
+
 
 void ComputeIndirectTerm () {
 #ifndef NODEFAULTSTAR
