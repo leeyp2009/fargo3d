@@ -2,6 +2,74 @@
 
 // this is test2
 
+#include "fargo3d.h"
+
+// 结构体定义
+typedef struct {
+    real time, x, y, z, vx, vy, vz;
+} PlanetSnapshot;
+
+void UpdatePlanetFromTrajectory(PlanetarySystem *sys, real current_time) {
+    static PlanetSnapshot *data = NULL;
+    static int n_lines = 0;
+    static int last_idx = 0;
+
+    // --- 1. 初始化与并行读取 ---
+    if (data == NULL) {
+        if (CPU_Rank == 0) { // 仅主进程读取
+            FILE *fp = fopen("bigplanet0.dat", "r");
+            if (!fp) {
+                mastererr("Error: Cannot open bigplanet0.dat\n");
+                exit(1);
+            }
+            char line[512];
+            while (fgets(line, sizeof(line), fp)) n_lines++;
+            rewind(fp);
+            data = (PlanetSnapshot *)malloc(n_lines * sizeof(PlanetSnapshot));
+            for (int i = 0; i < n_lines; i++) {
+                fscanf(fp, "%lf %lf %lf %lf %lf %lf %lf", 
+                       &data[i].time, &data[i].x, &data[i].y, &data[i].z, 
+                       &data[i].vx, &data[i].vy, &data[i].vz);
+            }
+            fclose(fp);
+        }
+
+        // 广播总行数给所有进程
+        MPI_Bcast(&n_lines, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+        // 其他进程分配内存
+        if (CPU_Rank != 0) {
+            data = (PlanetSnapshot *)malloc(n_lines * sizeof(PlanetSnapshot));
+        }
+
+        // 广播整个数组数据 (MPI_BYTE 方式最通用)
+        MPI_Bcast(data, n_lines * sizeof(PlanetSnapshot), MPI_BYTE, 0, MPI_COMM_WORLD);
+    }
+
+    // --- 2. 寻找时间区间 (每个进程在本地内存中独立查找) ---
+    if (current_time < data[0].time) {
+        last_idx = 0;
+    } else {
+        while (last_idx < n_lines - 2 && data[last_idx + 1].time < current_time) {
+            last_idx++;
+        }
+    }
+
+    // --- 3. 线性插值与强制覆盖 ---
+    real t0 = data[last_idx].time;
+    real t1 = data[last_idx + 1].time;
+    real f = (t1 == t0) ? 0.0 : (current_time - t0) / (t1 - t0);
+    
+    // 假设更新第 0 号行星
+    int k = 0; 
+    sys->x[k]  = data[last_idx].x  + f * (data[last_idx+1].x  - data[last_idx].x);
+    sys->y[k]  = data[last_idx].y  + f * (data[last_idx+1].y  - data[last_idx].y);
+    sys->z[k]  = data[last_idx].z  + f * (data[last_idx+1].z  - data[last_idx].z);
+    sys->vx[k] = data[last_idx].vx + f * (data[last_idx+1].vx - data[last_idx].vx);
+    sys->vy[k] = data[last_idx].vy + f * (data[last_idx+1].vy - data[last_idx].vy);
+    sys->vz[k] = data[last_idx].vz + f * (data[last_idx+1].vz - data[last_idx].vz);
+}
+
 void ComputeIndirectTerm () {
 #ifndef NODEFAULTSTAR
   IndirectTerm.x = -DiskOnPrimaryAcceleration.x;
