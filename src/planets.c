@@ -26,7 +26,7 @@ void UpdatePlanetFromTrajectory(PlanetarySystem *sys, real current_time, int n) 
             
             FILE *fp = fopen(filename, "r");
             if (!fp) {
-                mastererr("Error: cannot find bigplanet%d.dat\n" in %s, n, OUTPUTDIR);
+                mastererr("Error: cannot find bigplanet%d.dat in %s\n", n, OUTPUTDIR);
                 exit(1);
             }
             
