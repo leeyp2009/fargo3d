@@ -1,5 +1,11 @@
 #include "fargo3d.h"
 
+#ifndef MPI
+#define MPI_COMM_WORLD 0
+#define MPI_INT 0
+#define MPI_CHAR 0
+#endif
+
 // 定义结构体匹配 bigplanet0.dat 的列
 typedef struct {
     real time, x, y, z, vx, vy, vz;
@@ -20,7 +26,7 @@ void UpdatePlanetFromTrajectory(PlanetarySystem *sys, real current_time, int n) 
             
             FILE *fp = fopen(filename, "r");
             if (!fp) {
-                mastererr("错误：无法在目录 %s 中找到 bigplanet%d.dat\n", OUTPUTDIR, n);
+                mastererr("Error: cannot find bigplanet%d.dat\n" in %s, n, OUTPUTDIR);
                 exit(1);
             }
             
@@ -49,7 +55,7 @@ void UpdatePlanetFromTrajectory(PlanetarySystem *sys, real current_time, int n) 
         }
 
         // 广播完整的轨迹数据数组
-        MPI_Bcast(data, n_lines * sizeof(PlanetSnapshot), MPI_BYTE, 0, MPI_COMM_WORLD);
+        MPI_Bcast(data, n_lines * sizeof(PlanetSnapshot), MPI_CHAR, 0, MPI_COMM_WORLD);
     }
 
     // --- 2. 寻找当前模拟时间所在的索引区间 ---
