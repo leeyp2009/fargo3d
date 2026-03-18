@@ -1,9 +1,5 @@
 #include "fargo3d.h"
 
-// this is test2
-
-#include "fargo3d.h"
-
 // 结构体定义
 typedef struct {
     real time, x, y, z, vx, vy, vz;
