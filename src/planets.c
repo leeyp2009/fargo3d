@@ -1,6 +1,6 @@
 #include "fargo3d.h"
 
-// this is test
+// this is test2
 
 void ComputeIndirectTerm () {
 #ifndef NODEFAULTSTAR
