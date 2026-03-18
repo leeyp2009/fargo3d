@@ -194,6 +194,8 @@ void AdvanceSystemFromDisk(real dt) {
       Sys->vz[k] += dt * IndirectTerm.z;
 #endif
     }
+
+    UpdatePlanetFromTrajectory(Sys, PhysicalTime, k)
   }
 }
 
