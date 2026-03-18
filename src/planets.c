@@ -195,7 +195,7 @@ void AdvanceSystemFromDisk(real dt) {
 #endif
     }
 
-    UpdatePlanetFromTrajectory(Sys, PhysicalTime, k)
+    UpdatePlanetFromTrajectory(Sys, PhysicalTime, k);
   }
 }
 
