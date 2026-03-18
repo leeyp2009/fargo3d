@@ -3,7 +3,7 @@
 #ifndef MPI
 #define MPI_COMM_WORLD 0
 #define MPI_INT 0
-#define MPI_CHAR 0
+#define MPI_CHAR 1
 #endif
 
 // 定义结构体匹配 bigplanet0.dat 的列
