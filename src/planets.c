@@ -9,6 +9,7 @@ void UpdatePlanetFromTrajectory(PlanetarySystem *sys, real current_time, int n) 
     static PlanetSnapshot *data = NULL;
     static int n_lines = 0;
     static int last_idx = 0;
+	int i;
 
     // --- 1. 初始化与并行读取 ---
     if (data == NULL) {
@@ -29,7 +30,7 @@ void UpdatePlanetFromTrajectory(PlanetarySystem *sys, real current_time, int n) 
             rewind(fp);
 
             data = (PlanetSnapshot *)malloc(n_lines * sizeof(PlanetSnapshot));
-            for (int i = 0; i < n_lines; i++) {
+            for (i = 0; i < n_lines; i++) {
                 // 读取：时间 x y z vx vy vz
                 if (fscanf(fp, "%lf %lf %lf %lf %lf %lf %lf", 
                        &data[i].time, &data[i].x, &data[i].y, &data[i].z, 
