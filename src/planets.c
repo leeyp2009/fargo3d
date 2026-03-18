@@ -1,5 +1,7 @@
 #include "fargo3d.h"
 
+// this is test
+
 void ComputeIndirectTerm () {
 #ifndef NODEFAULTSTAR
   IndirectTerm.x = -DiskOnPrimaryAcceleration.x;
