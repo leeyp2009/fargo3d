@@ -35,8 +35,8 @@ void compute_potential(real dt) {
     subcycling = 30;		/* Arbitrary number of subcycles which
 				   should fit most needs */
 	  
-  // for (i = 0; i < subcycling; i++)
-  //  FARGO_SAFE(AdvanceSystemRK5(1.0/((double)(subcycling))*dt));
+  for (i = 0; i < subcycling; i++)
+    FARGO_SAFE(AdvanceSystemRK5(1.0/((double)(subcycling))*dt));
   
   alreadycalculated = Timestepcount;
   
@@ -45,7 +45,7 @@ void compute_potential(real dt) {
     Domega = omeganew-OMEGAFRAME;
     OMEGAFRAME = omeganew;
   }
-  // RotatePsys(OMEGAFRAME*dt);
+  RotatePsys(OMEGAFRAME*dt);
   }
 }
 
