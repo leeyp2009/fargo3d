@@ -42,7 +42,7 @@ void UpdatePlanetFromTrajectory(PlanetarySystem *sys, real current_time, int n) 
                 if (fscanf(fp, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf", 
                        &data[i].nt, &data[i].x, &data[i].y, &data[i].z, 
                        &data[i].vx, &data[i].vy, &data[i].vz, 
-					   &data[i].mp, &data[i].time, &data[i].omega) == EOF) break;
+					&data[i].mp, &data[i].time, &data[i].omega) == EOF) break;
             }
             fclose(fp);
             masterprint("loaded trajectory of planets from %s，in total %d lines.\n", filename, n_lines);
