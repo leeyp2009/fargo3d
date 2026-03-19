@@ -212,6 +212,7 @@ PlanetarySystem *InitPlanetarySystem (char *filename) {
       sys->acc[i] = accret;
       sys->FeelDisk[i] = feeldis;
       sys->FeelOthers[i] = feelothers;
+	  sys->Flag_Pres[i] = flag_pres;
       if (sys->mass[i] > THRESHOLD_STELLAR_MASS)
 	nbstars++;
       i++;
