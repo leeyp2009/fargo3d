@@ -121,7 +121,7 @@ void AdvanceSystemRK5 (real dt) {
 
   int i, n;
   boolean *feelothers;
-  boolean *flag_pres;
+  boolean flag_pres;
   real theta, rdot, r, new_r, omega, x, y;
   real dtheta, vx, vy, denom;
   real xc, yc, zc;
