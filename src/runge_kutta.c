@@ -127,7 +127,9 @@ void AdvanceSystemRK5 (real dt) {
   real xc, yc, zc;
   
   n = Sys->nb; 
-
+  flag_pres = Sys->Flag_Pres;
+  if (!flag_pres) {
+	  
   for (i = 0; i < n; i++) { 
     q0[i]     = Sys->x[i];
     q0[i+n]   = Sys->y[i];
@@ -141,9 +143,7 @@ void AdvanceSystemRK5 (real dt) {
   }
 
   feelothers = Sys->FeelOthers;
-  flag_pres = Sys->Flag_Pres;
-  if (!flag_pres)
-  	RungeKutta (q0, dt, PlanetMasses, q1, n, feelothers);
+  RungeKutta (q0, dt, PlanetMasses, q1, n, feelothers);
 
   for (i = 1-(PhysicalTime >= RELEASEDATE); i < Sys->nb; i++) {
     Sys->x[i]  = q1[i];
@@ -153,6 +153,7 @@ void AdvanceSystemRK5 (real dt) {
     Sys->vy[i] = q1[i+4*n];
     Sys->vz[i] = q1[i+5*n];
   }
+  
   if (PhysicalTime < RELEASEDATE) { //We hereafter assume the planet to be in the plane.
     x = Sys->x[0];
     y = Sys->y[0];
@@ -191,5 +192,6 @@ void AdvanceSystemRK5 (real dt) {
       Sys->y[i] -= yc;
       Sys->z[i] -= zc;
     }
+  }
   }
 }
