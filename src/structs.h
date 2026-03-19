@@ -41,6 +41,7 @@ struct planetary_system {
   boolean *FeelDisk;		/**< For each planet tells if it feels the disk (ie migrates) */
   boolean *FeelOthers;		/**< For each planet tells if it feels
 				   the other planets' gravity */
+  boolean *Flag_Pres;    /* For each planets, flag to prescribe the orbit of the planet*/
 };
 
 struct grid {   // Store all relevant information for grid
