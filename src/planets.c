@@ -61,22 +61,23 @@ void UpdatePlanetFromTrajectory(PlanetarySystem *sys, real current_time, int n) 
     }
 
     // --- 2. 寻找当前模拟时间所在的索引区间 ---
-    // 简单的线性搜索，配合 last_idx 缓存优化性能
-    if (current_time < data[0].time) {
-        last_idx = 0;
-    } else {
-        while (last_idx < n_lines - 2 && data[last_idx + 1].time < current_time) {
-            last_idx++;
-        }
-    }
+	if (current_time <= data[0].time) {
+	    last_idx = 0; // 还没到文件开始时间，取第一个点
+	} else {
+	    // 只有在当前时间超过第二个点时，才需要移动 last_idx
+	    while (last_idx < n_lines - 2 && data[last_idx + 1].time < current_time) {
+	        last_idx++;
+	    }
+	}
+
 
     // --- 3. 时间插值计算 ---
     real t0 = data[last_idx].time;
     real t1 = data[last_idx + 1].time;
     real f = (t1 == t0) ? 0.0 : (current_time - t0) / (t1 - t0);
     
-    // 强制覆盖系统中第 0 号行星的状态
-    int k = 0; 
+    // 强制覆盖系统中第 n 号行星的状态
+    int k = n; 
     sys->x[k]  = data[last_idx].x  + f * (data[last_idx+1].x  - data[last_idx].x);
     sys->y[k]  = data[last_idx].y  + f * (data[last_idx+1].y  - data[last_idx].y);
     sys->z[k]  = data[last_idx].z  + f * (data[last_idx+1].z  - data[last_idx].z);
