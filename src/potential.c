@@ -29,7 +29,7 @@ void compute_potential(real dt) {
     DiskOnPrimaryAcceleration = ComputeAccel(0.0, 0.0, 0.0, 0.0, 0.0);
     FARGO_SAFE(ComputeIndirectTerm());
     FARGO_SAFE(Potential()); // Gravitational potential from star and planet(s)
-    // FARGO_SAFE(AdvanceSystemFromDisk(dt));
+    FARGO_SAFE(AdvanceSystemFromDisk(dt));
 
   if (ThereIsACentralBinary)
     subcycling = 30;		/* Arbitrary number of subcycles which
