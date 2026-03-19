@@ -149,7 +149,6 @@ void AdvanceSystemRK5 (real dt) {
   for (i = 1-(PhysicalTime >= RELEASEDATE); i < Sys->nb; i++) {
 	flag_pres = Sys->Flag_Pres[i];  
 	if (!flag_pres) {
-	printf("this is a test!\n");
     Sys->x[i]  = q1[i];
     Sys->y[i]  = q1[i+n];
     Sys->z[i]  = q1[i+2*n];
