@@ -121,6 +121,7 @@ void AdvanceSystemRK5 (real dt) {
 
   int i, n;
   boolean *feelothers;
+  boolean *flag_pres;
   real theta, rdot, r, new_r, omega, x, y;
   real dtheta, vx, vy, denom;
   real xc, yc, zc;
@@ -140,7 +141,9 @@ void AdvanceSystemRK5 (real dt) {
   }
 
   feelothers = Sys->FeelOthers;
-  RungeKutta (q0, dt, PlanetMasses, q1, n, feelothers);
+  flag_pres = Sys->Flag_Pres;
+  if (!flag_pres)
+  	RungeKutta (q0, dt, PlanetMasses, q1, n, feelothers);
 
   for (i = 1-(PhysicalTime >= RELEASEDATE); i < Sys->nb; i++) {
     Sys->x[i]  = q1[i];
