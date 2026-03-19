@@ -364,6 +364,11 @@ void ListPlanets () {
     } else {
       printf ("Doesn't feel the other planets potential\n");
     }
+	if (Sys->Flag_Pres[i] == YES) {
+      printf ("Prescribe the planet orbits\n");
+    } else {
+      printf ("Doesn't Prescribe the planet orbits\n");
+    }  
     printf ("\n");
   }
 }
