@@ -151,6 +151,7 @@ PlanetarySystem *InitPlanetarySystem (char *filename) {
   real xp,yp,zp,vxp,vyp,vzp,mp,M1,M2,r1,r2,v1,v2;
   real mass, dist, accret;
   boolean feeldis, feelothers;
+  boolean flag_pres;
   real newmass;
   real summass=0.0;
   real e_bin, a_bin, period_bin;
