@@ -43,7 +43,7 @@ void UpdatePlanetFromTrajectory(PlanetarySystem *sys, real current_time, int n) 
                        &data[i].vx, &data[i].vy, &data[i].vz) == EOF) break;
             }
             fclose(fp);
-            masterprint("已成功从 %s 加载行星轨迹，共 %d 行。\n", filename, n_lines);
+            masterprint("loaded trajectory of planets from %s，in total %d lines.\n", filename, n_lines);
         }
 
         // 广播总行数给所有进程
