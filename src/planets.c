@@ -6,7 +6,7 @@
 //#define MPI_CHAR 1
 //#endif
 
-// 定义结构体匹配 bigplanet0.dat 的列
+// 定义结构体匹配 ibigplanet0.dat 的列
 typedef struct {
     real time, x, y, z, vx, vy, vz;
 } PlanetSnapshot;
@@ -21,12 +21,12 @@ void UpdatePlanetFromTrajectory(PlanetarySystem *sys, real current_time, int n) 
     if (data == NULL) {
         if (CPU_Rank == 0) { // 仅由主进程执行文件 I/O
             char filename[1024];
-            // 动态拼接路径: OUTPUTDIR/bigplanet0.dat
-            sprintf(filename, "%sbigplanet%d.dat", OUTPUTDIR, n);
+            // 动态拼接路径: OUTPUTDIR/ibigplanet0.dat
+            sprintf(filename, "%sibigplanet%d.dat", OUTPUTDIR, n);
             
             FILE *fp = fopen(filename, "r");
             if (!fp) {
-                mastererr("Error: cannot find bigplanet%d.dat in %s\n", n, OUTPUTDIR);
+                mastererr("Error: cannot find ibigplanet%d.dat in %s\n", n, OUTPUTDIR);
                 exit(1);
             }
             
