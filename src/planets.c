@@ -17,6 +17,7 @@ void UpdatePlanetFromTrajectory(PlanetarySystem *sys, real current_time, int n) 
     static int n_lines = 0;
     static int last_idx = 0;
 	int i;
+	real f;
 
     // --- 1. 初始化与并行读取 ---
     if (data == NULL) {
@@ -74,7 +75,17 @@ void UpdatePlanetFromTrajectory(PlanetarySystem *sys, real current_time, int n) 
     // --- 3. 时间插值计算 ---
     real t0 = data[last_idx].time;
     real t1 = data[last_idx + 1].time;
-    real f = (t1 == t0) ? 0.0 : (current_time - t0) / (t1 - t0);
+	if (current_time <= t0) {
+	    f = 0.0;
+	} 
+	// 再处理数学边界：如果时间到了但两行数据时间戳一样，判定比例为 0（防止除以0）
+	else if (t1 == t0) {
+	    f = 0.0;
+	} 
+	// 正常插值
+	else {
+	    f = (current_time - t0) / (t1 - t0);
+	}
     
     // 强制覆盖系统中第 n 号行星的状态
     int k = n; 
