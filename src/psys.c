@@ -21,6 +21,7 @@ PlanetarySystem *AllocPlanetSystem(int nb) {
   char command[512];
   real *mass, *x, *y, *z, *vx, *vy, *vz, *acc;
   boolean *feeldisk, *feelothers;
+  boolean *flag_pres;
   int i;
   PlanetarySystem *sys;
   int temp;
@@ -45,7 +46,8 @@ PlanetarySystem *AllocPlanetSystem(int nb) {
   }
   feeldisk   = (boolean*)malloc(sizeof(char)*(nb+1));
   feelothers = (boolean*)malloc(sizeof(char)*(nb+1));
-  if ((feeldisk == NULL) || (feelothers == NULL)) {
+  flag_pres   = (boolean*)malloc(sizeof(char)*(nb+1));
+  if ((feeldisk == NULL) || (feelothers == NULL) || (flag_pres == NULL)) {
     fprintf (stderr, "Not enough memory for boolean allocation in PlanetarySystem.\n");
     prs_exit (1);
   }
@@ -59,9 +61,11 @@ PlanetarySystem *AllocPlanetSystem(int nb) {
   sys->mass = mass;
   sys->FeelDisk = feeldisk;
   sys->FeelOthers = feelothers;
+  sys->Flag_Pres = flag_pres;
   for (i = 0; i < nb; i++) {
     x[i] = y[i] = z[i] = vx[i] = vy[i] = vz[i] = mass[i] = acc[i] = 0.0;
     feeldisk[i] = feelothers[i] = YES;
+	flag_pres[i] = NO;
   }
   for (i = 0; i < nb; i++) {
     /* Creates orbit[i].dat if it does not exist */
@@ -111,6 +115,7 @@ void FreePlanetary () {
   free (Sys->acc);
   free (Sys->FeelOthers);
   free (Sys->FeelDisk);
+  free (Sys->Flag_Pres);
   free (Sys);
 }
 
@@ -140,7 +145,7 @@ real ComputeInnerMass(real r) {
 
 PlanetarySystem *InitPlanetarySystem (char *filename) {
   FILE *input;
-  char s[512], nm[512], test1[512], test2[512], *s1;
+  char s[512], nm[512], test1[512], test2[512], test3[512], *s1;
   PlanetarySystem *sys;
   int i=0, j, nb, nbstars=0, i_star1=-1, i_star2=-1;
   real xp,yp,zp,vxp,vyp,vzp,mp,M1,M2,r1,r2,v1,v2;
@@ -171,9 +176,9 @@ PlanetarySystem *InitPlanetarySystem (char *filename) {
     if (isalpha(s[0])) {
       s1 = s + strlen(nm);
 #ifdef FLOAT
-      sscanf(s1 + strspn(s1, "\t :=>_"), "%f %f %f %s %s", &dist, &mass, &accret, test1, test2);
+      sscanf(s1 + strspn(s1, "\t :=>_"), "%f %f %f %s %s %s", &dist, &mass, &accret, test1, test2, test3);
 #else
-      sscanf(s1 + strspn(s1, "\t :=>_"), "%lf %lf %lf %s %s", &dist, &mass, &accret, test1, test2);
+      sscanf(s1 + strspn(s1, "\t :=>_"), "%lf %lf %lf %s %s %s", &dist, &mass, &accret, test1, test2, test3);
 #endif
       if ((SEMIMAJORAXIS > 0.0) && (i == 0)) // SemiMajorAxis can be
 					     // used to overwrite the
@@ -191,8 +196,10 @@ PlanetarySystem *InitPlanetarySystem (char *filename) {
       if (PLANETMASS > 1e-18)
 	sys->mass[0] = PLANETMASS;
       feeldis = feelothers = YES;
+	  flag_pres = NO;
       if (tolower(*test1) == 'n') feeldis = NO;
       if (tolower(*test2) == 'n') feelothers = NO;
+	  if (tolower(*test3) == 'y') flag_pres = YES;
       sys->x[i] = (real)dist*(1.0+ECCENTRICITY); // Planets are initialized at apoastron
       sys->y[i] = 0.0;
       sys->z[i] = 0.0;
