@@ -143,8 +143,6 @@ void AdvanceSystemRK5 (real dt) {
 	
   }
 	
-	
-	
   feelothers = Sys->FeelOthers;
   RungeKutta (q0, dt, PlanetMasses, q1, n, feelothers);
 
