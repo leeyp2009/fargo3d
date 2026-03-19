@@ -34,9 +34,9 @@ void compute_potential(real dt) {
   if (ThereIsACentralBinary)
     subcycling = 30;		/* Arbitrary number of subcycles which
 				   should fit most needs */
-  if (!FLAG_PRES)
-	  for (i = 0; i < subcycling; i++)
-    	FARGO_SAFE(AdvanceSystemRK5(1.0/((double)(subcycling))*dt));
+	  
+  for (i = 0; i < subcycling; i++)
+    FARGO_SAFE(AdvanceSystemRK5(1.0/((double)(subcycling))*dt));
   
   alreadycalculated = Timestepcount;
   
