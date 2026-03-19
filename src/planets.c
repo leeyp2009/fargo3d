@@ -8,7 +8,8 @@
 
 // 定义结构体匹配 ibigplanet0.dat 的列
 typedef struct {
-    real time, x, y, z, vx, vy, vz;
+    int nt; 
+	real x, y, z, vx, vy, vz, mp, time, omega;
 } PlanetSnapshot;
 
 void UpdatePlanetFromTrajectory(PlanetarySystem *sys, real current_time, int n) {
@@ -37,10 +38,11 @@ void UpdatePlanetFromTrajectory(PlanetarySystem *sys, real current_time, int n) 
 
             data = (PlanetSnapshot *)malloc(n_lines * sizeof(PlanetSnapshot));
             for (i = 0; i < n_lines; i++) {
-                // 读取：时间 x y z vx vy vz
-                if (fscanf(fp, "%lf %lf %lf %lf %lf %lf %lf", 
-                       &data[i].time, &data[i].x, &data[i].y, &data[i].z, 
-                       &data[i].vx, &data[i].vy, &data[i].vz) == EOF) break;
+                // read: nt, x y z vx vy vz, mp, time, omega
+                if (fscanf(fp, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf", 
+                       &data[i].nt, &data[i].x, &data[i].y, &data[i].z, 
+                       &data[i].vx, &data[i].vy, &data[i].vz, 
+					   &data[i].mp, &data[i].time, &data[i].omega) == EOF) break;
             }
             fclose(fp);
             masterprint("loaded trajectory of planets from %s，in total %d lines.\n", filename, n_lines);
