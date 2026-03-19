@@ -365,7 +365,7 @@ void ListPlanets () {
       printf ("Doesn't feel the other planets potential\n");
     }
 	if (Sys->Flag_Pres[i] == YES) {
-      printf ("Prescribe the planet orbits\n");
+      printf ("Prescribe the planet orbits, also need to set feeldisk and feelothers false!!!\n");
     } else {
       printf ("Doesn't Prescribe the planet orbits\n");
     }  
