@@ -188,7 +188,7 @@ void AdvanceSystemFromDisk(real dt) {
   real r, m, smoothing;
   NbPlanets = Sys->nb;
   for (k = 0; k < NbPlanets; k++) {
-    if (Sys->FeelDisk[k] == YES) {
+    if (Sys->FeelDisk[k] == 1) {
       m = Sys->mass[k];
       x = Sys->x[k];
       y = Sys->y[k];
@@ -207,9 +207,43 @@ void AdvanceSystemFromDisk(real dt) {
       Sys->vy[k] += dt * IndirectTerm.y;
       Sys->vz[k] += dt * IndirectTerm.z;
 #endif
-    }
-
+	} else if (Sys->FeelDisk[k] == 2) {
+      m = Sys->mass[k];
+      x = Sys->x[k];
+      y = Sys->y[k];
+      z = Sys->z[k];
+      vx = Sys->vx[k];
+      vy = Sys->vy[k];
+      vz = Sys->vz[k];
+      r = sqrt(x*x + y*y + z*z);
+      if (ROCHESMOOTHING != 0)
+        smoothing = r*pow(m/3./MSTAR,1./3.)*ROCHESMOOTHING;
+      else
+        smoothing = ASPECTRATIO*pow(r/R0,FLARINGINDEX)*r*THICKNESSSMOOTHING;
+      //gamma = ComputeAccel (x, y, z, smoothing, m);
+		if (Sys->taum[k] != 0.0){
+        gammax = -Sys->vx[k]/Sys->taum[k];
+        gammay = -Sys->vy[k]/Sys->taum[k];
+        gammaz = -Sys->vz[k]/Sys->taum[k];
+      }
+      if (Sys->taue[k] != 0.0){
+        const double vdotr = x*vx + y*vy + z*vz;
+        const double prefac = -2*vdotr/r/r/Sys->taue[k];
+        gammax += prefac*x;
+        gammay += prefac*y;
+        gammaz += prefac*z;
+      }
+	  Sys->vx[k] += dt * gammax;
+      Sys->vy[k] += dt * gammay;
+      Sys->vz[k] += dt * gammaz;
+#ifdef GASINDIRECTTERM
+      Sys->vx[k] += dt * IndirectTerm.x;
+      Sys->vy[k] += dt * IndirectTerm.y;
+      Sys->vz[k] += dt * IndirectTerm.z;
+#endif
+    } else if ((Sys->FeelDisk[k] == 2) && (Sys->Flag_Pres[k]==YES)) {
     UpdatePlanetFromTrajectory(Sys, PhysicalTime, k);
+	}
   }
 }
 
