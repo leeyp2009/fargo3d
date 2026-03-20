@@ -190,7 +190,6 @@ void AdvanceSystemFromDisk(real dt) {
   real r, m, smoothing;
   NbPlanets = Sys->nb;
   for (k = 0; k < NbPlanets; k++) {
-	  printf("FeelDisk:%d, %d/n",Sys->FeelDisk[k],Sys->Flag_Pres[k]);
     if (Sys->FeelDisk[k] == 1) {
       m = Sys->mass[k];
       x = Sys->x[k];
