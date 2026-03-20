@@ -185,6 +185,8 @@ void AdvanceSystemFromDisk(real dt) {
   int NbPlanets, k;
   Point gamma;
   real x, y, z;
+  real vx, vy, vz;
+  real gammax, gammay, gammaz;
   real r, m, smoothing;
   NbPlanets = Sys->nb;
   for (k = 0; k < NbPlanets; k++) {
