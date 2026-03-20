@@ -25,8 +25,8 @@ void UpdatePlanetFromTrajectory(PlanetarySystem *sys, int k, real current_time) 
     if (planets_data[k] == NULL) {
         if (CPU_Rank == 0) {
             char filename[1024];
-            // 动态生成文件名，如 bigplanet0.dat, bigplanet1.dat
-            sprintf(filename, "%sbigplanet%d.dat", OUTPUTDIR, k);
+            // 动态生成文件名，如 ibigplanet0.dat, ibigplanet1.dat
+            sprintf(filename, "%sibigplanet%d.dat", OUTPUTDIR, k);
             
             FILE *fp = fopen(filename, "r");
             if (!fp) {
