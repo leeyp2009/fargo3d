@@ -190,6 +190,7 @@ void AdvanceSystemFromDisk(real dt) {
   real r, m, smoothing;
   NbPlanets = Sys->nb;
   for (k = 0; k < NbPlanets; k++) {
+	  printf("FeelDisk:%d, %d/n",Sys->FeelDisk[k],Sys->Flag_Pres[k]);
     if (Sys->FeelDisk[k] == 1) {
       m = Sys->mass[k];
       x = Sys->x[k];
@@ -243,7 +244,7 @@ void AdvanceSystemFromDisk(real dt) {
       Sys->vy[k] += dt * IndirectTerm.y;
       Sys->vz[k] += dt * IndirectTerm.z;
 #endif
-    } else if ((Sys->FeelDisk[k] == 0) && (Sys->Flag_Pres[k]==YES)) {
+    } else if ((Sys->FeelDisk[k] == 0) && (Sys->Flag_Pres[k] == YES)) {
     UpdatePlanetFromTrajectory(Sys, PhysicalTime, k);
 	}
   }
