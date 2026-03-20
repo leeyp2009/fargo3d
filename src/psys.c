@@ -219,7 +219,7 @@ PlanetarySystem *InitPlanetarySystem (char *filename) {
 	  sys->taue[i] = taue;
       if (PLANETMASS > 1e-18)
 	sys->mass[0] = PLANETMASS;
-	  feeldisk = flag;
+	  feeldis = flag;
       feelothers = YES;
 	  flag_pres = NO;
       //if (tolower(*test1) == 'n') feeldis = NO;
