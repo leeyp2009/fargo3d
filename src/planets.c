@@ -244,6 +244,7 @@ void AdvanceSystemFromDisk(real dt) {
       Sys->vz[k] += dt * IndirectTerm.z;
 #endif
     } else if ((Sys->FeelDisk[k] == 0) && (Sys->Flag_Pres[k]==YES)) {
+	printf("this is a test!");
     UpdatePlanetFromTrajectory(Sys, PhysicalTime, k);
 	}
   }
