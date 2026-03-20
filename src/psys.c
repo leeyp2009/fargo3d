@@ -198,7 +198,7 @@ PlanetarySystem *InitPlanetarySystem (char *filename) {
 #ifdef FLOAT
       sscanf(s1 + strspn(s1, "\t :=>_"), "%f %f %f %s %s %s %f %f %f %f", &dist, &mass, &accret, &flag, test2, test3, &ecc, &inc, &taum, &taue);
 #else
-      sscanf(s1 + strspn(s1, "\t :=>_"), "%lf %lf %lf %s %s %s %lf %lf %lf %lf", &dist, &mass, &accret, &flag, test2, test3, &inc, &taum, &taum, &taue);
+      sscanf(s1 + strspn(s1, "\t :=>_"), "%lf %lf %lf %s %s %s %lf %lf %lf %lf", &dist, &mass, &accret, &flag, test2, test3, &ecc, &inc, &taum, &taue);
 #endif
       if ((SEMIMAJORAXIS > 0.0) && (i == 0)) // SemiMajorAxis can be
 					     // used to overwrite the
