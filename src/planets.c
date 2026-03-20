@@ -21,6 +21,7 @@ static int last_indices[MAX_TRACKED_PLANETS] = {0};
 
 void UpdatePlanetFromTrajectory(PlanetarySystem *sys, int k, real current_time) {
     // --- 1. 初始化与并行读取 (每个行星只在第一次调用时读取一次) ---
+	int i;
     if (planets_data[k] == NULL) {
         if (CPU_Rank == 0) {
             char filename[1024];
@@ -39,7 +40,7 @@ void UpdatePlanetFromTrajectory(PlanetarySystem *sys, int k, real current_time) 
             rewind(fp);
 
             planets_data[k] = (PlanetSnapshot *)malloc(n_lines * sizeof(PlanetSnapshot));
-            for (int i = 0; i < n_lines; i++) {
+            for (i = 0; i < n_lines; i++) {
                 fscanf(fp, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf", 
                        &planets_data[k][i].index, &planets_data[k][i].x, &planets_data[k][i].y, 
                        &planets_data[k][i].z, &planets_data[k][i].vx, &planets_data[k][i].vy, 
