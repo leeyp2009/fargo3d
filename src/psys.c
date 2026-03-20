@@ -163,8 +163,10 @@ PlanetarySystem *InitPlanetarySystem (char *filename) {
   int i=0, j, nb, nbstars=0, i_star1=-1, i_star2=-1;
   real xp,yp,zp,vxp,vyp,vzp,mp,M1,M2,r1,r2,v1,v2;
   real mass, dist, accret;
+  real ecc, inc;
   real taum, taue;
-  boolean feeldis, feelothers;
+  boolean feelothers;
+  int feeldis;
   boolean flag_pres;
   real newmass;
   real summass=0.0;
@@ -191,9 +193,9 @@ PlanetarySystem *InitPlanetarySystem (char *filename) {
     if (isalpha(s[0])) {
       s1 = s + strlen(nm);
 #ifdef FLOAT
-      sscanf(s1 + strspn(s1, "\t :=>_"), "%f %f %f %s %s %s %f %f", &dist, &mass, &accret, test1, test2, test3, &taum, &taue);
+      sscanf(s1 + strspn(s1, "\t :=>_"), "%f %f %f %s %s %s %f %f %f %f", &dist, &mass, &accret, test1, test2, test3, &ecc, &inc, &taum, &taue);
 #else
-      sscanf(s1 + strspn(s1, "\t :=>_"), "%lf %lf %lf %s %s %s %lf %lf", &dist, &mass, &accret, test1, test2, test3, &taum, &taue);
+      sscanf(s1 + strspn(s1, "\t :=>_"), "%lf %lf %lf %s %s %s %lf %lf %lf %lf", &dist, &mass, &accret, test1, test2, test3, &inc, &taum, &taum, &taue);
 #endif
       if ((SEMIMAJORAXIS > 0.0) && (i == 0)) // SemiMajorAxis can be
 					     // used to overwrite the
@@ -208,6 +210,8 @@ PlanetarySystem *InitPlanetarySystem (char *filename) {
       mass *= MSTAR;
 #endif
       sys->mass[i] = mass;
+	  ECCENTRICITY = ecc;
+      INCLINATION  = inc;
 	  sys->taum[i] = taum;
 	  sys->taue[i] = taue;
       if (PLANETMASS > 1e-18)
