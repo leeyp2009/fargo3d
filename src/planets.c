@@ -6,97 +6,104 @@
 //#define MPI_CHAR 1
 //#endif
 
-// 定义结构体匹配 ibigplanet0.dat 的列
+
+// 匹配 10 列数据格式
 typedef struct {
-    int nt; 
-	real x, y, z, vx, vy, vz, mp, time, omega;
+    int index;
+    real x, y, z, vx, vy, vz, mp, time, omega;
 } PlanetSnapshot;
 
-void UpdatePlanetFromTrajectory(PlanetarySystem *sys, real current_time, int n) {
-    static PlanetSnapshot *data = NULL;
-    static int n_lines = 0;
-    static int last_idx = 0;
-	int i;
-	real f;
+// 使用指针数组支持多个行星，MAX_PLANETS 取 10 或根据需求定义
+#define MAX_TRACKED_PLANETS 10
+static PlanetSnapshot *planets_data[MAX_TRACKED_PLANETS] = {NULL};
+static int lines_per_planet[MAX_TRACKED_PLANETS] = {0};
+static int last_indices[MAX_TRACKED_PLANETS] = {0};
 
-    // --- 1. 初始化与并行读取 ---
-    if (data == NULL) {
-        if (CPU_Rank == 0) { // 仅由主进程执行文件 I/O
+void UpdatePlanetFromTrajectory(PlanetarySystem *sys, int k, real current_time) {
+    // --- 1. 初始化与并行读取 (每个行星只在第一次调用时读取一次) ---
+    if (planets_data[k] == NULL) {
+        if (CPU_Rank == 0) {
             char filename[1024];
-            // 动态拼接路径: OUTPUTDIR/ibigplanet0.dat
-            sprintf(filename, "%sibigplanet%d.dat", OUTPUTDIR, n);
+            // 动态生成文件名，如 bigplanet0.dat, bigplanet1.dat
+            sprintf(filename, "%sbigplanet%d.dat", OUTPUTDIR, k);
             
             FILE *fp = fopen(filename, "r");
             if (!fp) {
-                mastererr("Error: cannot find ibigplanet%d.dat in %s\n", n, OUTPUTDIR);
-                exit(1);
+                mastererr("Error: Cannot open %s\n", filename);
+                prs_exit(1);
             }
             
-            // 统计行数
+            int n_lines = 0;
             char line[1024];
             while (fgets(line, sizeof(line), fp)) n_lines++;
             rewind(fp);
 
-            data = (PlanetSnapshot *)malloc(n_lines * sizeof(PlanetSnapshot));
-            for (i = 0; i < n_lines; i++) {
-                // read: nt, x y z vx vy vz, mp, time, omega
-                if (fscanf(fp, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf", 
-                       &data[i].nt, &data[i].x, &data[i].y, &data[i].z, 
-                       &data[i].vx, &data[i].vy, &data[i].vz, 
-					&data[i].mp, &data[i].time, &data[i].omega) == EOF) break;
+            planets_data[k] = (PlanetSnapshot *)malloc(n_lines * sizeof(PlanetSnapshot));
+            for (int i = 0; i < n_lines; i++) {
+                fscanf(fp, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf", 
+                       &planets_data[k][i].index, &planets_data[k][i].x, &planets_data[k][i].y, 
+                       &planets_data[k][i].z, &planets_data[k][i].vx, &planets_data[k][i].vy, 
+                       &planets_data[k][i].vz, &planets_data[k][i].mp, &planets_data[k][i].time, 
+                       &planets_data[k][i].omega);
             }
             fclose(fp);
-            masterprint("loaded trajectory of planets from %s，in total %d lines.\n", filename, n_lines);
+            lines_per_planet[k] = n_lines;
         }
 
-        // 广播总行数给所有进程
-        MPI_Bcast(&n_lines, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        // MPI 广播该行星的数据行数
+        MPI_Bcast(&lines_per_planet[k], 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-        // 其他进程根据行数分配本地内存
+        // 非主进程分配内存
         if (CPU_Rank != 0) {
-            data = (PlanetSnapshot *)malloc(n_lines * sizeof(PlanetSnapshot));
+            planets_data[k] = (PlanetSnapshot *)malloc(lines_per_planet[k] * sizeof(PlanetSnapshot));
         }
 
-        // 广播完整的轨迹数据数组
-        MPI_Bcast(data, n_lines * sizeof(PlanetSnapshot), MPI_CHAR, 0, MPI_COMM_WORLD);
+        // 广播该行星的完整轨迹数组
+        MPI_Bcast(planets_data[k], lines_per_planet[k] * sizeof(PlanetSnapshot), MPI_CHAR, 0, MPI_COMM_WORLD);
     }
 
-    // --- 2. 寻找当前模拟时间所在的索引区间 ---
-	if (current_time <= data[0].time) {
-	    last_idx = 0; // 还没到文件开始时间，取第一个点
-	} else {
-	    // 只有在当前时间超过第二个点时，才需要移动 last_idx
-	    while (last_idx < n_lines - 2 && data[last_idx + 1].time < current_time) {
-	        last_idx++;
-	    }
-	}
+    // --- 2. 变量定义与边界处理 ---
+    int n = lines_per_planet[k];
+    int idx = last_indices[k];
+    real t0, t1, f;
 
+    // A. 时间未到：停在第一行
+    if (current_time <= planets_data[k][0].time) {
+        f = 0.0;
+        t0 = planets_data[k][0].time;
+        t1 = planets_data[k][0].time;
+        idx = 0;
+    } 
+    // B. 时间超过：停在最后一行
+    else if (current_time >= planets_data[k][n-1].time) {
+        f = 0.0;
+        t0 = planets_data[k][n-1].time;
+        t1 = planets_data[k][n-1].time;
+        idx = n - 1;
+    }
+    // C. 正常插值区间定位
+    else {
+        while (idx < n - 2 && planets_data[k][idx + 1].time < current_time) {
+            idx++;
+        }
+        last_indices[k] = idx; // 更新缓存索引
+        t0 = planets_data[k][idx].time;
+        t1 = planets_data[k][idx + 1].time;
+        
+        // 防除以 0 检查
+        if (t1 == t0) f = 0.0;
+        else f = (current_time - t0) / (t1 - t0);
+    }
 
-    // --- 3. 时间插值计算 ---
-    real t0 = data[last_idx].time;
-    real t1 = data[last_idx + 1].time;
-	if (current_time <= t0) {
-	    f = 0.0;
-	} 
-	// 再处理数学边界：如果时间到了但两行数据时间戳一样，判定比例为 0（防止除以0）
-	else if (t1 == t0) {
-	    f = 0.0;
-	} 
-	// 正常插值
-	else {
-	    f = (current_time - t0) / (t1 - t0);
-	}
+    // --- 3. 应用插值结果到系统 ---
+    sys->x[k]  = planets_data[k][idx].x  + f * (planets_data[k][idx+1].x  - planets_data[k][idx].x);
+    sys->y[k]  = planets_data[k][idx].y  + f * (planets_data[k][idx+1].y  - planets_data[k][idx].y);
+    sys->z[k]  = planets_data[k][idx].z  + f * (planets_data[k][idx+1].z  - planets_data[k][idx].z);
+    sys->vx[k] = planets_data[k][idx].vx + f * (planets_data[k][idx+1].vx - planets_data[k][idx].vx);
+    sys->vy[k] = planets_data[k][idx].vy + f * (planets_data[k][idx+1].vy - planets_data[k][idx].vy);
+    sys->vz[k] = planets_data[k][idx].vz + f * (planets_data[k][idx+1].vz - planets_data[k][idx].vz);
     
-    // 强制覆盖系统中第 n 号行星的状态
-    int k = n; 
-    sys->x[k]  = data[last_idx].x  + f * (data[last_idx+1].x  - data[last_idx].x);
-    sys->y[k]  = data[last_idx].y  + f * (data[last_idx+1].y  - data[last_idx].y);
-    sys->z[k]  = data[last_idx].z  + f * (data[last_idx+1].z  - data[last_idx].z);
-    sys->vx[k] = data[last_idx].vx + f * (data[last_idx+1].vx - data[last_idx].vx);
-    sys->vy[k] = data[last_idx].vy + f * (data[last_idx+1].vy - data[last_idx].vy);
-    sys->vz[k] = data[last_idx].vz + f * (data[last_idx+1].vz - data[last_idx].vz);
 }
-
 
 void ComputeIndirectTerm () {
 #ifndef NODEFAULTSTAR
@@ -244,7 +251,7 @@ void AdvanceSystemFromDisk(real dt) {
       Sys->vz[k] += dt * IndirectTerm.z;
 #endif
     } else if ((Sys->FeelDisk[k] == 0) && (Sys->Flag_Pres[k] == YES)) {
-    UpdatePlanetFromTrajectory(Sys, PhysicalTime, k);
+    UpdatePlanetFromTrajectory(Sys, k, PhysicalTime);
 	}
   }
 }
