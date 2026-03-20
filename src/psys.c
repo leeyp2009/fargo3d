@@ -378,15 +378,15 @@ void ListPlanets () {
       printf ("Non-accreting.\n");
     else
       printf ("accretion time = %.10f\n", 1.0/(Sys->acc[i]));
-    if (Sys->FeelDisk[i] == YES) {
+    if (Sys->FeelDisk[i] == 1) {
       printf ("Feels the disk potential\n");
+	} else if (Sys->FeelDisk[i] == 2) {
+      printf ("Prescribe planet motion using taum and taue for the planet\n");
     } else {
       printf ("Doesn't feel the disk potential\n");
     }
-    if (Sys->FeelOthers[i] == 1) {
+    if (Sys->FeelOthers[i] == YES) {
       printf ("Feels the other planets potential\n");
-	} else if (Sys->FeelDisk[i] == 2) {
-      printf ("Prescribe planet motion using taum and taue for the planet\n");
     } else {
       printf ("Doesn't feel the other planets potential\n");
     }
