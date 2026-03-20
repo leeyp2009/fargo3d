@@ -243,7 +243,7 @@ void AdvanceSystemFromDisk(real dt) {
       Sys->vy[k] += dt * IndirectTerm.y;
       Sys->vz[k] += dt * IndirectTerm.z;
 #endif
-    } else if ((Sys->FeelDisk[k] == 2) && (Sys->Flag_Pres[k]==YES)) {
+    } else if ((Sys->FeelDisk[k] == 0) && (Sys->Flag_Pres[k]==YES)) {
     UpdatePlanetFromTrajectory(Sys, PhysicalTime, k);
 	}
   }
