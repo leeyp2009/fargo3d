@@ -50,7 +50,7 @@ PlanetarySystem *AllocPlanetSystem(int nb) {
     prs_exit (1);
   }
   //feeldisk   = (boolean*)malloc(sizeof(char)*(nb+1));
-  feeldisk   = (int*)malloc(sizeof(char)*(nb+1));
+  feeldisk   = (int*)malloc(sizeof(int)*(nb+1));
   feelothers = (boolean*)malloc(sizeof(char)*(nb+1));
   flag_pres   = (boolean*)malloc(sizeof(char)*(nb+1));
   if ((feeldisk == NULL) || (feelothers == NULL) || (flag_pres == NULL)) {
