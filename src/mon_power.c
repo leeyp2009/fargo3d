@@ -7,7 +7,7 @@
 #include "fargo3d.h"
 //<\INCLUDES>
 
-void mon_energy_cpu () {
+void mon_power_cpu () {
 
   //<USER_DEFINED>
   INPUT(Density);
