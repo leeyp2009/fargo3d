@@ -132,6 +132,7 @@
 #define TORQ       512
 #define REYNOLDS   1024
 #define MAXWELL    2048
+#define POWER      4096
 
 ////////////////////////////////////////////////////////////////
 
