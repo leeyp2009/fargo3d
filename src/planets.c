@@ -19,6 +19,20 @@ static PlanetSnapshot *planets_data[MAX_TRACKED_PLANETS] = {NULL};
 static int lines_per_planet[MAX_TRACKED_PLANETS] = {0};
 static int last_indices[MAX_TRACKED_PLANETS] = {0};
 
+double HermiteInterpolate(double p0, double p1, double v0, double v1, double dt, double t_frac) {
+    double t2 = t_frac * t_frac;
+    double t3 = t2 * t_frac;
+    
+    // Hermite 基函数
+    double h00 = 2*t3 - 3*t2 + 1;
+    double h10 = t3 - 2*t2 + t_frac;
+    double h01 = -2*t3 + 3*t2;
+    double h11 = t3 - t2;
+    
+    // 注意速度项需要乘上 dt，因为导数是相对于物理时间的
+    return h00 * p0 + h10 * dt * v0 + h01 * p1 + h11 * dt * v1;
+}
+
 void UpdatePlanetFromTrajectory(PlanetarySystem *sys, int k, real current_time) {
     // --- 1. 初始化与并行读取 (每个行星只在第一次调用时读取一次) ---
 	int i;
@@ -96,13 +110,27 @@ void UpdatePlanetFromTrajectory(PlanetarySystem *sys, int k, real current_time) 
         else f = (current_time - t0) / (t1 - t0);
     }
 
+	real dt = t1 - t0;
+
     // --- 3. 应用插值结果到系统 ---
-    sys->x[k]  = planets_data[k][idx].x  + f * (planets_data[k][idx+1].x  - planets_data[k][idx].x);
-    sys->y[k]  = planets_data[k][idx].y  + f * (planets_data[k][idx+1].y  - planets_data[k][idx].y);
-    sys->z[k]  = planets_data[k][idx].z  + f * (planets_data[k][idx+1].z  - planets_data[k][idx].z);
-    sys->vx[k] = planets_data[k][idx].vx + f * (planets_data[k][idx+1].vx - planets_data[k][idx].vx);
-    sys->vy[k] = planets_data[k][idx].vy + f * (planets_data[k][idx+1].vy - planets_data[k][idx].vy);
-    sys->vz[k] = planets_data[k][idx].vz + f * (planets_data[k][idx+1].vz - planets_data[k][idx].vz);
+	sys->x[k] = HermiteInterpolate(planets_data[k][idx].x,  planets_data[k][idx+1].x, 
+                               planets_data[k][idx].vx, planets_data[k][idx+1].vx, dt, f);
+
+	sys->y[k] = HermiteInterpolate(planets_data[k][idx].y,  planets_data[k][idx+1].y, 
+                               planets_data[k][idx].vy, planets_data[k][idx+1].vy, dt, f);
+
+	sys->z[k] = HermiteInterpolate(planets_data[k][idx].z,  planets_data[k][idx+1].z, 
+                               planets_data[k][idx].vz, planets_data[k][idx+1].vz, dt, f);
+	sys->vx[k] = planets_data[k][idx].vx + f * (planets_data[k][idx+1].vx - planets_data[k][idx].vx);
+	sys->vy[k] = planets_data[k][idx].vy + f * (planets_data[k][idx+1].vy - planets_data[k][idx].vy);
+	sys->vz[k] = planets_data[k][idx].vz + f * (planets_data[k][idx+1].vz - planets_data[k][idx].vz);
+	
+    //sys->x[k]  = planets_data[k][idx].x  + f * (planets_data[k][idx+1].x  - planets_data[k][idx].x);
+    //sys->y[k]  = planets_data[k][idx].y  + f * (planets_data[k][idx+1].y  - planets_data[k][idx].y);
+    //sys->z[k]  = planets_data[k][idx].z  + f * (planets_data[k][idx+1].z  - planets_data[k][idx].z);
+    //sys->vx[k] = planets_data[k][idx].vx + f * (planets_data[k][idx+1].vx - planets_data[k][idx].vx);
+    //sys->vy[k] = planets_data[k][idx].vy + f * (planets_data[k][idx+1].vy - planets_data[k][idx].vy);
+    //sys->vz[k] = planets_data[k][idx].vz + f * (planets_data[k][idx+1].vz - planets_data[k][idx].vz);
     
 }
 
