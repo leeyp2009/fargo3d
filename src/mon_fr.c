@@ -80,8 +80,7 @@ void mon_fr_cpu () {
         fzi = dz * InvDist3;
 #endif
 
-        // fr
-        // 
+        // radial force fr
         interm[ll] = (fxi * dr + fyi * dy + fzi * dz)/sqrt(dx*dx+dy*dy+dz*dz);
 
 #ifdef X
