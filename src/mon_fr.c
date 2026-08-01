@@ -7,7 +7,7 @@
 #include "fargo3d.h"
 //<\INCLUDES>
 
-void mon_power_cpu () {
+void mon_fr_cpu () {
 
   //<USER_DEFINED>
   INPUT(Density);
@@ -80,9 +80,9 @@ void mon_power_cpu () {
         fzi = dz * InvDist3;
 #endif
 
-        // 能量变化率：力与行星速度的点积
-        // VXplanet, VYplanet, VZplanet 也会由 monitor.c 自动更新为当前行星的速度
-        interm[ll] = fxi * VXplanet + fyi * VYplanet + fzi * VZplanet;
+        // fr
+        // 
+        interm[ll] = (fxi * dr + fyi * dy + fzi * dz)/sqrt(dx*dx+dy*dy+dz*dz);
 
 #ifdef X
       }
