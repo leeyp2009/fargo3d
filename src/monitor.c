@@ -54,6 +54,7 @@ void InitMonitoring() {
   InitFunctionMonitoring (MOM_Z,   mon_momz, "momz", TOTAL, "YCZC", INDEP_PLANET);
   InitFunctionMonitoring (TORQ,    mon_torq, "torq", TOTAL, "YCZC", DEP_PLANET);
   InitFunctionMonitoring (POWER,   mon_power, "power", TOTAL, "YCZC", DEP_PLANET);
+  InitFunctionMonitoring (FR,      mon_fr, "fr", TOTAL, "YCZC", DEP_PLANET);
   InitFunctionMonitoring (REYNOLDS, mon_reynolds, "reynolds", TOTAL, "YCZC", INDEP_PLANET);
   InitFunctionMonitoring (MAXWELL, mon_maxwell, "maxwell", TOTAL, "YCZC", INDEP_PLANET);
   InitFunctionMonitoring (BXFLUX, mon_bxflux, "bxflux", TOTAL, "YCZC", INDEP_PLANET);
